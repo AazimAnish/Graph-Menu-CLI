@@ -7,119 +7,117 @@ const rl = readline.createInterface({
 class Graph {
   constructor() {
     this.nodes = new Map();
+    this.edges = new Map();
   }
 
-  registerPerson(firstName, lastName, dob) {
-    // Using a combination of first and last name as the key to handle duplicates
-    this.nodes.set(`${firstName} ${lastName}`, {
-      firstName,
-      lastName,
-      dob,
-    });
-    console.log("Person registered.");
-    this.showMenu(); // Go back to the menu after registering
-  }
-
-  contactUs() {
-    console.log("Name: Aazim Anish, Email: aazimanish1@gmail.com, Phone: 9562037068");
-    this.showMenu(); // Go back to the menu after showing contact details
-  }
-
-  addShipment() {
-    rl.question("Enter Tracking ID (8 digits): ", trackId => {
-      if (trackId.length === 8) {
-        rl.question("Enter Phone Number (10 digits): ", phoneNo => {
-          if (phoneNo.length === 10 && /^\d{10}$/.test(phoneNo)) {
-            console.log("Your shipment is currently in Kochi and will be out for delivery within 2 days.");
-            this.showMenu();
-          } else {
-            console.log("Invalid phone number. It must be 10 digits.");
-            this.addShipment(); // Retry the process
-          }
-        });
-      } else {
-        console.log("Invalid Tracking ID. It must be 8 digits.");
-        this.addShipment(); // Retry the process
-      }
-    });
-  }
-
-
-  adminSearch(name) {
-    let found = false;
-    this.nodes.forEach((value, key) => {
-      if (key.includes(name)) {
-        console.log(`\nDetails for ${key}:`);
-        console.log(`First Name: ${value.firstName}`);
-        console.log(`Last Name: ${value.lastName}`);
-        console.log(`DOB: ${value.dob}`);
-        found = true;
-      }
-    });
-
-    if (!found) {
-      console.log("No person found with that name.");
-    }
-
-    this.showMenu(); // Go back to the menu after searching
+  addMenuItem(key, text, action) {
+    this.nodes.set(key, text);
+    this.edges.set(key, action);
   }
 
   showMenu() {
-    console.log("\nMenu:");
-    console.log("1. Register Person");
-    console.log("2. Contact Us");
-    console.log("3. Track Delivery");
-    console.log("4. Admin Search");
-    console.log("5. Exit");
+    console.log('\nMenu:');
+    this.nodes.forEach((text, key) => {
+      console.log(`${key}. ${text}`);
+    });
 
-    rl.question("Choose an option: ", (option) => {
-      switch (option) {
-        case "1":
-          this.promptForPersonDetails();
-          break;
-        case "2":
-          this.contactUs();
-          break;
-        case "3":
-          this.promptForShipmentDetails();
-          break;
-        case "4":
-          this.promptForAdminSearch();
-          break;
-        case "5":
-          rl.close();
-          break;
-        default:
-          console.log("Invalid option. Please choose a valid option.");
-          this.showMenu();
+    rl.question('Choose an option: ', (option) => {
+      const action = this.edges.get(option);
+      if (action) {
+        action();
+      } else {
+        console.log('Invalid option. Please choose a valid option.');
+        this.showMenu();
       }
-    });
-  }
-
-  promptForPersonDetails() {
-    rl.question("Enter first name: ", firstName => {
-      rl.question("Enter last name: ", lastName => {
-        rl.question("Enter date of birth: ", dob => {
-          this.registerPerson(firstName, lastName, dob);
-        });
-      });
-    });
-  }
-
-  promptForShipmentDetails() {
-      rl.question("Press enter to confirm: ", shipmentId => {
-        this.addShipment(shipmentId);
-      });
-  }
-
-  promptForAdminSearch() {
-    rl.question("Enter first or last name to search: ", name => {
-      this.adminSearch(name);
     });
   }
 }
 
-const graph = new Graph();
+class Person {
+  constructor(firstName, lastName, dob) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.dob = dob;
+  }
+}
 
-console.log("Welcome to the interactive system!");
+const graph = new Graph();
+const people = new Map();
+
+graph.addMenuItem('1', 'Register Person', () => {
+  rl.question('Enter first name: ', (firstName) => {
+    rl.question('Enter last name: ', (lastName) => {
+      rl.question('Enter date of birth: ', (dob) => {
+        const person = new Person(firstName, lastName, dob);
+        people.set(`${firstName} ${lastName}`, person);
+        console.log('Person registered.');
+        console.log(`Name: ${firstName} ${lastName}`);
+        console.log(`Date of birth: ${dob}`);
+        graph.showMenu(); // Go back to the menu after completing registration
+      });
+    });
+  });
+});
+
+graph.addMenuItem('2', 'Contact Us', () => {
+  console.log('Name: Aazim Anish, Email: aazimanish1@gmail.com, Phone: 9562037068');
+  graph.showMenu(); // Go back to the menu after showing contact details
+});
+
+graph.addMenuItem('3', 'Track Delivery', () => {
+  console.log('Track Delivery selected.');
+  rl.question('Enter Tracking ID (8 digits): ', (trackId) => {
+    if (trackId.length === 8) {
+      rl.question('Enter Phone Number (10 digits): ', (phoneNo) => {
+        if (phoneNo.length === 10 && /^\d{10}$/.test(phoneNo)) {
+          console.log('Your shipment is currently in Kochi and will be out for delivery within 2 days.');
+        } else {
+          console.log('Invalid phone number. It must be 10 digits.');
+        }
+        graph.showMenu(); // Go back to the menu after track delivery
+      });
+    } else {
+      console.log('Invalid Tracking ID. It must be 8 digits.');
+      graph.showMenu(); // Go back to the menu
+    }
+  });
+});
+
+graph.addMenuItem('4', 'Admin Search', () => {
+  rl.question('Enter first or last name to search: ', (name) => {
+    // Implement DFS search to find matching people
+    const results = performAdminSearch(name);
+    if (results.length === 0) {
+      console.log('No person found with that name.');
+    } else {
+      console.log('Search Results:');
+      results.forEach((result) => {
+        const person = people.get(result);
+        console.log(`Name: ${person.firstName} ${person.lastName}`);
+        console.log(`Date of birth: ${person.dob}`);
+      });
+    }
+    graph.showMenu(); // Go back to the menu after searching
+  });
+});
+
+graph.addMenuItem('5', 'Exit', () => {
+  rl.close();
+});
+
+function performAdminSearch(name) {
+  const visited = new Set();
+  const results = [];
+
+  people.forEach((person, fullName) => {
+    if (!visited.has(fullName) && fullName.includes(name)) {
+      visited.add(fullName);
+      results.push(fullName);
+    }
+  });
+
+  return results;
+}
+
+console.log('Welcome to the interactive system!');
 graph.showMenu();
