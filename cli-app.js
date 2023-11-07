@@ -162,22 +162,33 @@ class Graph {
 }
 
 const graph = new Graph();
+let isUserRegistered = false; // Initialize the flag
 
-graph.addMenuItem('1', 'Register User', () => {
+graph.addMenuItem('1', 'Register Person', () => {
   graph.registerPerson();
+  isUserRegistered = true; // Set the flag to true when a user is registered
 });
-
 graph.addMenuItem('2', 'Contact Us', () => {
   console.log('Name: Aazim Anish, Email: aazimanish1@gmail.com, Phone: 9562037068');
   graph.showMenu();
 });
 
 graph.addMenuItem('3', 'Track Delivery', () => {
-  graph.trackDelivery();
+  if (isUserRegistered) {
+    graph.trackDelivery();
+  } else {
+    console.log('No user is registered. Please register a user first.');
+    graph.showMenu();
+  }
 });
 
 graph.addMenuItem('4', 'Admin Search', () => {
-  graph.adminSearch();
+  if (isUserRegistered) {
+    graph.adminSearch();
+  } else {
+    console.log('No user is registered. Please register a user first.');
+    graph.showMenu();
+  }
 });
 
 graph.addMenuItem('5', 'Exit', () => {
