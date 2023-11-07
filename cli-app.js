@@ -107,7 +107,7 @@ class Graph {
   }
 
   promptForShipmentDetails() {
-      rl.question("Enter shipment ID: ", shipmentId => {
+      rl.question("Press enter to confirm: ", shipmentId => {
         this.addShipment(shipmentId);
       });
   }
